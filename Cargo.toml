@@ -1,0 +1,28 @@
+[package]
+name = "datadoghq"
+version = "0.2.1"
+authors = ["Andrés Castiglia <acastiglia@gmail.com>"]
+edition = "2021"
+license = "MIT"
+readme = "README.md"
+description = "Datadog APM-compatible tracer and logger"
+keywords = ["datadog", "tracer", "logger"]
+repository = "https://github.com/andrescastiglia/rust-datadog.git"
+homepage = "https://castiglia.ar"
+categories = [ "development-tools::debugging", "development-tools::profiling", "asynchronous" ]
+rust-version = "1.61"
+
+[dependencies]
+attohttpc = "~0.19"
+chrono = "~0.4"
+crossbeam-channel = "~0.5"
+lazy_static = "~1.4"
+log = { version="~0.4", features = ["std", "serde"] }
+num_cpus = "~1.13"
+rand = "~0.8"
+serde = { version = "~1.0", features = ["derive"] }
+serde_json = "~1.0"
+tracing = "~0.1"
+
+[dev-dependencies]
+ctor = "~0.1"
