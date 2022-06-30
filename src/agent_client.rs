@@ -8,16 +8,17 @@ pub struct AgentClient {
 
 impl AgentClient {
     pub fn new(config: &Arc<Config>) -> Self {
-        let (client_sender, client_requests) = crossbeam_channel::unbounded();
+        let num_cpus = num_cpus::get();
+        let (client_sender, client_requests) = crossbeam_channel::bounded(num_cpus * 50);
 
-        for _ in 0..num_cpus::get() {
+        for _ in 0..num_cpus {
             let channel = client_requests.clone();
             let config = Arc::clone(config);
 
             std::thread::spawn(move || Self::thread_loop(&config, &channel));
         }
 
-        AgentClient { client_sender }
+        Self { client_sender }
     }
 
     pub fn send(&self, stack: Vec<Span>) {

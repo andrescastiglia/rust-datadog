@@ -38,7 +38,8 @@ pub struct DatadogTracing {
 unsafe impl Sync for DatadogTracing {}
 
 impl DatadogTracing {
-    pub fn init(config: Config) {
+    #[must_use]
+    pub fn new(config: Config) -> Self {
         let config = Arc::new(config);
 
         let (sender, receiver) = mpsc::channel();
@@ -49,31 +50,28 @@ impl DatadogTracing {
             std::thread::spawn(move || Self::trace_server_loop(&client, &receiver, &config));
         }
 
-        let tracer = DatadogTracing {
+        // Only set the global sample rate once when the tracer is set as the global tracer.
+        // This must be marked unsafe because we are overwriting a global, but it only gets done
+        // once in a process's lifetime.
+        unsafe {
+            if SAMPLING_RATE.is_none() {
+                SAMPLING_RATE = Some(config.apm_config().sample_rate());
+            }
+        }
+
+        Self {
             sender,
             level: config.logging_config().level(),
             tracing_level: crate::ll2tl(config.logging_config().level()),
-        };
-
-        log::set_max_level(config.logging_config().level().to_level_filter());
-
-        if config.enabled() {
-            // Only set the global sample rate once when the tracer is set as the global tracer.
-            // This must be marked unsafe because we are overwriting a global, but it only gets done
-            // once in a process's lifetime.
-            unsafe {
-                if SAMPLING_RATE.is_none() {
-                    SAMPLING_RATE = Some(config.apm_config().sample_rate());
-                }
-            }
-
-            tracing::subscriber::set_global_default(tracer).unwrap_or_else(|_| {
-                warn!(
-                    "Global subscriber has already been set!  \
-                           This should only be set once in the executable."
-                );
-            });
         }
+    }
+    pub fn init(config: Config) {
+        tracing::subscriber::set_global_default(Self::new(config)).unwrap_or_else(|_| {
+            warn!(
+                "Global subscriber has already been set!  \
+                           This should only be set once in the executable."
+            );
+        });
     }
     #[must_use]
     pub fn get_global_sampling_rate() -> f64 {

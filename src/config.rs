@@ -12,8 +12,6 @@ pub struct Config {
     logging_config: LoggingConfig,
     /// APM Config to set up APM Analytics (default is to disable)
     apm_config: ApmConfig,
-    /// Turn on tracing
-    enabled: bool,
 }
 
 impl Default for Config {
@@ -24,7 +22,6 @@ impl Default for Config {
             service: "default".to_owned(),
             logging_config: LoggingConfig::default(),
             apm_config: ApmConfig::default(),
-            enabled: true,
         }
     }
 }
@@ -37,7 +34,6 @@ impl Config {
         endpoint: String,
         logging_config: LoggingConfig,
         apm_config: ApmConfig,
-        enabled: bool,
     ) -> Self {
         Config {
             service,
@@ -45,7 +41,6 @@ impl Config {
             endpoint,
             logging_config,
             apm_config,
-            enabled,
         }
     }
     #[must_use]
@@ -67,9 +62,5 @@ impl Config {
     #[must_use]
     pub fn apm_config(&self) -> &ApmConfig {
         &self.apm_config
-    }
-    #[must_use]
-    pub fn enabled(&self) -> bool {
-        self.enabled
     }
 }
